@@ -7,9 +7,7 @@ import { Button } from "@/components/ui/button"
 import { DeleteTaskDialog } from "@/components/delete-task-dialog"
 import { getTaskById, getProject } from "@/app/actions"
 import type { TaskPriority } from "@/lib/types"
-import { cookies } from "next/headers"
-import { createServerClient } from "@supabase/ssr"
-import type { Database } from "@/lib/database.types"
+import { checkAuthStatus } from "../../auth-actions"
 
 interface TaskPageProps {
   params: { id: string }
@@ -17,25 +15,10 @@ interface TaskPageProps {
 
 export default async function TaskPage({ params }: TaskPageProps) {
   // Check authentication status
-  const cookieStore = cookies()
-  const supabase = createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
-        },
-      },
-    },
-  )
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  const { isAuthenticated } = await checkAuthStatus()
 
   // If not authenticated, redirect to sign in
-  if (!session) {
+  if (!isAuthenticated) {
     redirect("/signin")
   }
 
@@ -72,19 +55,19 @@ export default async function TaskPage({ params }: TaskPageProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" asChild>
+          <Button variant="outline" size="icon" asChild className="h-9 w-9">
             <Link href="/">
               <ChevronLeft className="h-4 w-4" />
             </Link>
           </Button>
-          <h1 className="text-3xl font-bold tracking-tight">{task.name}</h1>
+          <h1 className="text-xl sm:text-3xl font-bold tracking-tight line-clamp-1">{task.name}</h1>
         </div>
         <DeleteTaskDialog task={task} />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Task Details</CardTitle>
@@ -92,7 +75,7 @@ export default async function TaskPage({ params }: TaskPageProps) {
           <CardContent className="space-y-4">
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-1">Description</h3>
-              <p>{task.description}</p>
+              <p className="whitespace-pre-line">{task.description}</p>
             </div>
 
             {project && (
@@ -102,7 +85,7 @@ export default async function TaskPage({ params }: TaskPageProps) {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-1">Created At</h3>
                 <div className="flex items-center gap-1">
@@ -123,7 +106,7 @@ export default async function TaskPage({ params }: TaskPageProps) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-1">Priority</h3>
                 {getPriorityBadge(task.priority)}

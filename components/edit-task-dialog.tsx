@@ -24,13 +24,15 @@ import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/components/ui/use-toast"
 import { cn } from "@/lib/utils"
 import { updateTask, getProjects } from "@/app/actions"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import type { Task, TaskStatus, TaskPriority } from "@/lib/types"
 
 interface EditTaskDialogProps {
   task: Task
+  id?: string
 }
 
-export function EditTaskDialog({ task }: EditTaskDialogProps) {
+export function EditTaskDialog({ task, id }: EditTaskDialogProps) {
   const [open, setOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([])
@@ -165,53 +167,80 @@ export function EditTaskDialog({ task }: EditTaskDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild onClick={(e) => e.stopPropagation()}>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
+      <DialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9"
+          onClick={(e) => e.stopPropagation()}
+          id={id}
+          aria-label="Edit task"
+        >
           <PencilIcon className="h-4 w-4" />
-          <span className="sr-only">Edit task</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[525px]">
-        <DialogHeader>
-          <DialogTitle>Edit Task</DialogTitle>
+      <DialogContent className="sm:max-w-[525px] p-0 sm:p-6 overflow-auto max-h-[calc(100dvh-2rem)]">
+        <DialogHeader className="p-4 sm:p-0 pb-0 sm:pb-2 sticky top-0 bg-background z-10">
+          <DialogTitle className="text-xl">Edit Task</DialogTitle>
           <DialogDescription>Make changes to your task here.</DialogDescription>
         </DialogHeader>
-        <form onSubmit={onSubmit} className="space-y-4 py-2">
+        <form onSubmit={onSubmit} className="space-y-4 p-4 sm:p-0 sm:py-2">
           <div className="space-y-2">
-            <Label htmlFor="name">Task Name</Label>
+            <Label htmlFor="name" className="text-base">
+              Task Name
+            </Label>
             <Input
               id="name"
               placeholder="Enter task name"
               value={formData.name}
               onChange={(e) => handleChange("name", e.target.value)}
+              className="h-12 text-base"
+              aria-describedby={errors.name ? "name-error" : undefined}
+              aria-invalid={!!errors.name}
             />
-            {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+            {errors.name && (
+              <p id="name-error" className="text-sm text-destructive">
+                {errors.name}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description" className="text-base">
+              Description
+            </Label>
             <Textarea
               id="description"
               placeholder="Describe the task..."
-              className="resize-none"
+              className="resize-none min-h-[100px] text-base"
               value={formData.description}
               onChange={(e) => handleChange("description", e.target.value)}
+              aria-describedby={errors.description ? "description-error" : undefined}
+              aria-invalid={!!errors.description}
             />
-            {errors.description && <p className="text-sm text-destructive">{errors.description}</p>}
+            {errors.description && (
+              <p id="description-error" className="text-sm text-destructive">
+                {errors.description}
+              </p>
+            )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="dueDate">Due Date</Label>
+              <Label htmlFor="dueDate" className="text-base">
+                Due Date
+              </Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     id="dueDate"
                     variant={"outline"}
-                    className={cn("w-full pl-3 text-left font-normal", !formData.dueAt && "text-muted-foreground")}
+                    className={cn("w-full h-12 pl-3 text-left font-normal", !formData.dueAt && "text-muted-foreground")}
+                    aria-describedby={errors.dueAt ? "dueDate-error" : undefined}
+                    aria-invalid={!!errors.dueAt}
                   >
                     {formData.dueAt ? format(formData.dueAt, "PPP") : <span>Pick a date</span>}
-                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    <CalendarIcon className="ml-auto h-5 w-5 opacity-50" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -220,19 +249,26 @@ export function EditTaskDialog({ task }: EditTaskDialogProps) {
                     selected={formData.dueAt}
                     onSelect={(date) => handleChange("dueAt", date)}
                     initialFocus
+                    className="rounded-md border"
                   />
                 </PopoverContent>
               </Popover>
-              {errors.dueAt && <p className="text-sm text-destructive">{errors.dueAt}</p>}
+              {errors.dueAt && (
+                <p id="dueDate-error" className="text-sm text-destructive">
+                  {errors.dueAt}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="priority">Priority</Label>
+              <Label htmlFor="priority" className="text-base">
+                Priority
+              </Label>
               <Select
                 value={formData.priority}
                 onValueChange={(value) => handleChange("priority", value as TaskPriority)}
               >
-                <SelectTrigger id="priority">
+                <SelectTrigger id="priority" className="h-12 text-base">
                   <SelectValue placeholder="Select priority" />
                 </SelectTrigger>
                 <SelectContent>
@@ -244,27 +280,33 @@ export function EditTaskDialog({ task }: EditTaskDialogProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="project">Project (Optional)</Label>
+              <Label htmlFor="project" className="text-base">
+                Project (Optional)
+              </Label>
               <Select value={formData.projectId} onValueChange={(value) => handleChange("projectId", value)}>
-                <SelectTrigger id="project">
+                <SelectTrigger id="project" className="h-12 text-base">
                   <SelectValue placeholder="Select a project" />
                 </SelectTrigger>
                 <SelectContent>
-                  {projects.map((project) => (
-                    <SelectItem key={project.id} value={project.id}>
-                      {project.name}
-                    </SelectItem>
-                  ))}
+                  <ScrollArea className="h-60">
+                    {projects.map((project) => (
+                      <SelectItem key={project.id} value={project.id}>
+                        {project.name}
+                      </SelectItem>
+                    ))}
+                  </ScrollArea>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status" className="text-base">
+                Status
+              </Label>
               <Select value={formData.status} onValueChange={(value) => handleChange("status", value as TaskStatus)}>
-                <SelectTrigger id="status">
+                <SelectTrigger id="status" className="h-12 text-base">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -275,8 +317,13 @@ export function EditTaskDialog({ task }: EditTaskDialogProps) {
             </div>
           </div>
 
-          <DialogFooter>
-            <Button type="submit" disabled={isSubmitting}>
+          <DialogFooter className="pt-2 sm:pt-0 px-0 sticky bottom-0 bg-background pb-4 mt-6">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto h-12 text-base"
+              aria-label="Save task changes"
+            >
               {isSubmitting ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -18,7 +19,6 @@ import {
   YAxis,
 } from "recharts"
 import { useAuth } from "@/components/auth-provider"
-import { useRouter } from "next/navigation"
 
 export default function StatsPage() {
   const [activeTab, setActiveTab] = useState("open-tasks")
@@ -80,8 +80,8 @@ export default function StatsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Statistics</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Statistics</h1>
       </div>
 
       <Tabs defaultValue="open-tasks" onValueChange={setActiveTab}>
@@ -97,10 +97,10 @@ export default function StatsPage() {
               <CardDescription>Number of open tasks over the last 30 days</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-[400px]">
+              <div className="h-[300px] sm:h-[400px]">
                 {isLoading ? (
                   <div className="flex items-center justify-center h-full">
-                    <Skeleton className="h-[350px] w-full" />
+                    <Skeleton className="h-[250px] sm:h-[350px] w-full" />
                   </div>
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
@@ -108,13 +108,18 @@ export default function StatsPage() {
                       data={formattedOpenTasksPerDay}
                       margin={{
                         top: 5,
-                        right: 30,
-                        left: 20,
+                        right: 10,
+                        left: 0,
                         bottom: 5,
                       }}
                     >
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" tick={{ fontSize: 12 }} interval={6} />
+                      <XAxis
+                        dataKey="date"
+                        tick={{ fontSize: 12 }}
+                        interval={window.innerWidth < 640 ? "preserveStartEnd" : 6}
+                        tickMargin={10}
+                      />
                       <YAxis />
                       <Tooltip />
                       <Legend />
@@ -140,10 +145,10 @@ export default function StatsPage() {
               <CardDescription>Number of open tasks due each day for the next week</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-[400px]">
+              <div className="h-[300px] sm:h-[400px]">
                 {isLoading ? (
                   <div className="flex items-center justify-center h-full">
-                    <Skeleton className="h-[350px] w-full" />
+                    <Skeleton className="h-[250px] sm:h-[350px] w-full" />
                   </div>
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
@@ -151,13 +156,21 @@ export default function StatsPage() {
                       data={formattedTasksForNext7Days}
                       margin={{
                         top: 5,
-                        right: 30,
-                        left: 20,
+                        right: 10,
+                        left: 0,
                         bottom: 5,
                       }}
                     >
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" />
+                      <XAxis
+                        dataKey="date"
+                        tick={{ fontSize: 10 }}
+                        tickMargin={10}
+                        interval={0}
+                        angle={window.innerWidth < 640 ? -45 : 0}
+                        textAnchor={window.innerWidth < 640 ? "end" : "middle"}
+                        height={window.innerWidth < 640 ? 60 : 30}
+                      />
                       <YAxis />
                       <Tooltip />
                       <Legend />

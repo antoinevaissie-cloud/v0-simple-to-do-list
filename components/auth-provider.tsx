@@ -84,23 +84,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     try {
       setError(null)
+      setIsLoading(true)
       const supabase = getClientSupabase()
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error, data } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
       if (error) {
         throw error
       }
+      // Session and user will be updated by the onAuthStateChange listener
     } catch (error: any) {
       setError(error.message || "An error occurred during sign in")
       console.error(error)
+      throw error
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const signUp = async (email: string, password: string) => {
     try {
       setError(null)
+      setIsLoading(true)
       const supabase = getClientSupabase()
       const { error } = await supabase.auth.signUp({
         email,
@@ -113,20 +119,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error: any) {
       setError(error.message || "An error occurred during sign up")
       console.error(error)
+      throw error
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const signOut = async () => {
     try {
       setError(null)
+      setIsLoading(true)
       const supabase = getClientSupabase()
       const { error } = await supabase.auth.signOut()
       if (error) {
         throw error
       }
+      // Session and user will be updated by the onAuthStateChange listener
     } catch (error: any) {
       setError(error.message || "An error occurred during sign out")
       console.error(error)
+    } finally {
+      setIsLoading(false)
     }
   }
 

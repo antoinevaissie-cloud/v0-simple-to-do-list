@@ -1,35 +1,18 @@
 import Link from "next/link"
+import { redirect } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { getProjects, getTasks } from "@/app/actions"
 import { NewProjectDialog } from "@/components/new-project-dialog"
 import type { TaskPriority } from "@/lib/types"
-import { cookies } from "next/headers"
-import { createServerClient } from "@supabase/ssr"
-import { redirect } from "next/navigation"
-import type { Database } from "@/lib/database.types"
+import { checkAuthStatus } from "../auth-actions"
 
 export default async function ProjectsPage() {
   // Check authentication status
-  const cookieStore = cookies()
-  const supabase = createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
-        },
-      },
-    },
-  )
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  const { isAuthenticated } = await checkAuthStatus()
 
   // If not authenticated, redirect to sign in
-  if (!session) {
+  if (!isAuthenticated) {
     redirect("/signin")
   }
 
@@ -59,14 +42,14 @@ export default async function ProjectsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Projects</h1>
         <NewProjectDialog />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {projects.length === 0 ? (
-          <Card>
+          <Card className="col-span-full">
             <CardContent className="pt-6">
               <p className="text-center text-muted-foreground">No projects found. Create a project to get started.</p>
             </CardContent>
@@ -77,37 +60,43 @@ export default async function ProjectsPage() {
             const openTasks = projectTasks.filter((task) => task.status === "open")
 
             return (
-              <Card key={project.id}>
+              <Card key={project.id} className="flex flex-col">
                 <CardHeader>
-                  <CardTitle>{project.name}</CardTitle>
+                  <CardTitle className="text-xl">{project.name}</CardTitle>
                   <CardDescription>
                     {openTasks.length} open task{openTasks.length !== 1 ? "s" : ""}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-1">
                   <div className="space-y-4">
                     {openTasks.length === 0 ? (
                       <p className="text-muted-foreground">No open tasks for this project.</p>
                     ) : (
-                      openTasks.map((task) => (
+                      openTasks.slice(0, 3).map((task) => (
                         <div key={task.id} className="border rounded-lg p-3 hover:bg-muted/50">
                           <Link href={`/tasks/${task.id}`} className="block">
-                            <h3 className="font-medium mb-1">{task.name}</h3>
-                            <div className="flex items-center justify-between text-sm">
-                              <div className="flex items-center gap-2">
-                                <span
-                                  className={
-                                    isOverdue(task.dueAt, task.status) ? "text-destructive" : "text-muted-foreground"
-                                  }
-                                >
-                                  Due {formatDate(task.dueAt)}
-                                </span>
-                                {getPriorityBadge(task.priority)}
-                              </div>
+                            <h3 className="font-medium mb-1 line-clamp-1">{task.name}</h3>
+                            <div className="flex flex-wrap items-center gap-2 text-sm">
+                              <span
+                                className={
+                                  isOverdue(task.dueAt, task.status) ? "text-destructive" : "text-muted-foreground"
+                                }
+                              >
+                                Due {formatDate(task.dueAt)}
+                              </span>
+                              {getPriorityBadge(task.priority)}
                             </div>
                           </Link>
                         </div>
                       ))
+                    )}
+
+                    {openTasks.length > 3 && (
+                      <div className="text-center pt-2">
+                        <Link href="/" className="text-sm text-primary hover:underline">
+                          View all {openTasks.length} tasks
+                        </Link>
+                      </div>
                     )}
                   </div>
                 </CardContent>

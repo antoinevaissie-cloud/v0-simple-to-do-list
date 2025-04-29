@@ -20,9 +20,10 @@ import type { Task } from "@/lib/types"
 
 interface DeleteTaskDialogProps {
   task: Task
+  id?: string
 }
 
-export function DeleteTaskDialog({ task }: DeleteTaskDialogProps) {
+export function DeleteTaskDialog({ task, id }: DeleteTaskDialogProps) {
   const [open, setOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
@@ -64,25 +65,26 @@ export function DeleteTaskDialog({ task }: DeleteTaskDialogProps) {
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+        className="h-9 w-9 text-muted-foreground hover:text-destructive"
         onClick={(e) => {
           e.stopPropagation()
           setOpen(true)
         }}
+        id={id}
+        aria-label="Delete task"
       >
         <Trash2 className="h-4 w-4" />
-        <span className="sr-only">Delete task</span>
       </Button>
 
-      <AlertDialogContent>
+      <AlertDialogContent className="max-w-[90vw] w-[400px]">
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure you want to delete this task?</AlertDialogTitle>
           <AlertDialogDescription>
             This will permanently delete the task "{task.name}". This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogFooter className="gap-2 sm:gap-0">
+          <AlertDialogCancel className="mt-0">Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDelete}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

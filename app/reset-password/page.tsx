@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Loader2 } from "lucide-react"
 import { getClientSupabase } from "@/lib/supabase"
 
 export default function ResetPassword() {
@@ -43,29 +44,31 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center py-12">
+    <div className="flex min-h-[calc(100dvh-4rem)] flex-col items-center justify-center py-6 px-4 sm:py-12">
       <div className="w-full max-w-md">
         {message && (
-          <Alert className="mb-4 bg-green-50 text-green-800 dark:bg-green-900 dark:text-green-100">
+          <Alert className="mb-6 bg-green-50 text-green-800 dark:bg-green-900 dark:text-green-100">
             <AlertDescription>{message}</AlertDescription>
           </Alert>
         )}
 
         {error && (
-          <Alert className="mb-4 bg-destructive/15 text-destructive">
+          <Alert className="mb-6 bg-destructive/15 text-destructive">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">Reset Password</CardTitle>
+        <Card className="w-full shadow-lg">
+          <CardHeader className="space-y-1 pb-6">
+            <CardTitle className="text-2xl font-bold">Reset Password</CardTitle>
             <CardDescription>Enter your email to receive a password reset link</CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+            <CardContent className="space-y-6">
+              <div className="space-y-3">
+                <Label htmlFor="email" className="text-base">
+                  Email
+                </Label>
                 <Input
                   id="email"
                   type="email"
@@ -73,16 +76,38 @@ export default function ResetPassword() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={isLoading}
+                  className="h-12 text-base px-4"
+                  autoComplete="email"
+                  inputMode="email"
                 />
               </div>
             </CardContent>
-            <CardFooter className="flex flex-col space-y-2">
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Sending..." : "Send Reset Link"}
+            <CardFooter className="flex flex-col space-y-4 pt-2 pb-6">
+              <Button
+                type="submit"
+                className="w-full h-12 text-base font-medium"
+                disabled={isLoading}
+                aria-label="Send password reset link"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  "Send Reset Link"
+                )}
               </Button>
               <p className="text-center text-sm text-muted-foreground">
                 Remember your password?{" "}
-                <Link href="/signin" className="text-primary underline-offset-4 hover:underline">
+                <Link
+                  href="/signin"
+                  className={`text-primary font-medium underline-offset-4 hover:underline ${
+                    isLoading ? "pointer-events-none opacity-50" : ""
+                  }`}
+                  tabIndex={isLoading ? -1 : 0}
+                >
                   Sign in
                 </Link>
               </p>

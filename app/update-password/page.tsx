@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Loader2 } from "lucide-react"
 import { getClientSupabase } from "@/lib/supabase"
 
 export default function UpdatePassword() {
@@ -78,51 +79,78 @@ export default function UpdatePassword() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center py-12">
+    <div className="flex min-h-[calc(100dvh-4rem)] flex-col items-center justify-center py-6 px-4 sm:py-12">
       <div className="w-full max-w-md">
         {message && (
-          <Alert className="mb-4 bg-green-50 text-green-800 dark:bg-green-900 dark:text-green-100">
+          <Alert className="mb-6 bg-green-50 text-green-800 dark:bg-green-900 dark:text-green-100">
             <AlertDescription>{message}</AlertDescription>
           </Alert>
         )}
 
         {(error || validationError) && (
-          <Alert className="mb-4 bg-destructive/15 text-destructive">
+          <Alert className="mb-6 bg-destructive/15 text-destructive">
             <AlertDescription>{error || validationError}</AlertDescription>
           </Alert>
         )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">Update Password</CardTitle>
+        <Card className="w-full shadow-lg">
+          <CardHeader className="space-y-1 pb-6">
+            <CardTitle className="text-2xl font-bold">Update Password</CardTitle>
             <CardDescription>Enter your new password</CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="password">New Password</Label>
+            <CardContent className="space-y-6">
+              <div className="space-y-3">
+                <Label htmlFor="password" className="text-base">
+                  New Password
+                </Label>
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled={isLoading}
+                  className="h-12 text-base px-4"
+                  autoComplete="new-password"
+                  minLength={6}
+                  aria-describedby="password-requirements"
                 />
+                <p id="password-requirements" className="text-xs text-muted-foreground">
+                  Password must be at least 6 characters long
+                </p>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+              <div className="space-y-3">
+                <Label htmlFor="confirmPassword" className="text-base">
+                  Confirm New Password
+                </Label>
                 <Input
                   id="confirmPassword"
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
+                  disabled={isLoading}
+                  className="h-12 text-base px-4"
+                  autoComplete="new-password"
                 />
               </div>
             </CardContent>
-            <CardFooter>
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Updating..." : "Update Password"}
+            <CardFooter className="pt-2 pb-6">
+              <Button
+                type="submit"
+                className="w-full h-12 text-base font-medium"
+                disabled={isLoading}
+                aria-label="Update your password"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  "Update Password"
+                )}
               </Button>
             </CardFooter>
           </form>

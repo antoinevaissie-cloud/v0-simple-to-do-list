@@ -1,4 +1,5 @@
 import { Suspense } from "react"
+import { redirect } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import TaskTable from "@/components/task-table"
 import { NewTaskDialog } from "@/components/new-task-dialog"
@@ -7,63 +8,33 @@ import { TaskSearch } from "@/components/task-search"
 import { getTasks } from "@/app/actions"
 import { TasksProvider } from "@/components/tasks-provider"
 import { TasksLoading } from "@/components/tasks-loading"
-import { cookies } from "next/headers"
-import { createServerClient } from "@supabase/ssr"
-import { redirect } from "next/navigation"
-import type { Database } from "@/lib/database.types"
+import { checkAuthStatus } from "./auth-actions"
 
 export default async function Dashboard() {
-  try {
-    // Check authentication status
-    const cookieStore = cookies()
-    const supabase = createServerClient<Database>(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value
-          },
-        },
-      },
-    )
+  // Check authentication status
+  const { isAuthenticated } = await checkAuthStatus()
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-
-    // If not authenticated, redirect to sign in
-    if (!session) {
-      redirect("/signin")
-    }
-
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <NewTaskDialog />
-        </div>
-
-        <Suspense fallback={<TasksLoading />}>
-          <TasksContent />
-        </Suspense>
-      </div>
-    )
-  } catch (error) {
-    console.error("Dashboard error:", error)
-    // Show a simple error UI instead of crashing
-    return (
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <div className="p-4 border rounded-md bg-destructive/10 text-destructive">
-          <p>There was an error loading the dashboard. Please try refreshing the page.</p>
-        </div>
-      </div>
-    )
+  // If not authenticated, redirect to sign in
+  if (!isAuthenticated) {
+    redirect("/signin")
   }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Dashboard</h1>
+        <NewTaskDialog />
+      </div>
+
+      <Suspense fallback={<TasksLoading />}>
+        <TasksContent />
+      </Suspense>
+    </div>
+  )
 }
 
 async function TasksContent() {
+  // We don't need to check auth again here since the parent component already did
   try {
     const tasks = await getTasks()
 
@@ -72,7 +43,7 @@ async function TasksContent() {
 
     return (
       <TasksProvider initialTasks={tasks}>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>

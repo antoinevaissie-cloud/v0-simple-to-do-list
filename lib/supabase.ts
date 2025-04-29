@@ -7,20 +7,14 @@ const envValidation = validateEnv()
 
 // Create a single supabase client for the entire application (client-side)
 const createSupabaseClient = () => {
-  // Check for required environment variables
+  // Check for required environment variables and always throw an error if they're missing
   if (!envValidation.valid) {
-    console.error(getEnvErrorMessage(envValidation))
-
-    // In development, throw an error to make the issue obvious
-    if (process.env.NODE_ENV === "development") {
-      throw new Error(getEnvErrorMessage(envValidation))
-    }
-
-    // In production, return a dummy client that won't cause runtime errors
-    // but log the error for debugging
-    return createClient("https://placeholder-url.supabase.co", "placeholder-key")
+    const errorMessage = getEnvErrorMessage(envValidation)
+    console.error(errorMessage)
+    throw new Error(errorMessage)
   }
 
+  // If we get here, we know the environment variables are valid
   const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL!
   const supabaseAnonKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
