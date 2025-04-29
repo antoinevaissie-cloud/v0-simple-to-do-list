@@ -1,0 +1,89 @@
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
+
+export interface Database {
+  public: {
+    Tables: {
+      projects: {
+        Row: {
+          id: string
+          name: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tasks: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          created_at: string
+          due_at: string
+          status: "open" | "done"
+          priority: "low" | "med" | "high"
+          project_id: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          created_at?: string
+          due_at: string
+          status: "open" | "done"
+          priority: "low" | "med" | "high"
+          project_id?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          created_at?: string
+          due_at?: string
+          status?: "open" | "done"
+          priority?: "low" | "med" | "high"
+          project_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+  }
+}
+
+export type Tables<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Row"]
+export type InsertTables<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Insert"]
+export type UpdateTables<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Update"]
