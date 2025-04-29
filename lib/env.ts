@@ -88,21 +88,22 @@ export function getEnvErrorMessage(result: ValidationResult): string {
  * Gets a specific environment variable with validation
  * @param key Environment variable name
  * @param required Whether the variable is required
- * @returns The environment variable value or undefined if not set
+ * @returns The environment variable value
  * @throws Error if the variable is required but not set
  */
-export function getEnv(key: EnvVar, required = true): string | undefined {
+export function getEnv(key: EnvVar, required = true): string {
   const value = process.env[key]
 
   if (required && (value === undefined || value.trim() === "")) {
     throw new Error(`Required environment variable ${key} is not set`)
   }
 
-  return value
+  return value || ""
 }
 
 /**
  * Safe access to environment variables with proper typing
+ * This will throw an error if required variables are missing
  */
 export const env = {
   NEXT_PUBLIC_SUPABASE_URL: getEnv("NEXT_PUBLIC_SUPABASE_URL"),
